@@ -1,0 +1,13 @@
+#
+# Vercel serverless function — HWPX style transplant.
+# Deploy target: https://github.com/wayne0525/MABC_HMM_HWPX
+#
+# Build/test locally:
+#   python3 vercel/api/index.py  (CLI stub — Vercel handles routing)
+#   python3 -c "import vercel.api.index as m; print(m.handler)"
+#
+
+MAX_A_BYTES = 5 * 1024 * 1024   # 5 MB
+MAX_B_BYTES = 1 * 1024 * 1024   # 1 MB
+MAX_TOTAL_BYTES = 6 * 1024 * 1024  # 6 MB
+MAX_OUT_BYTES = 5 * 1024 * 1024    # 5 MB
