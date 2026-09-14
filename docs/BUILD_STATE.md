@@ -1,8 +1,17 @@
 # BUILD_STATE.md — MABC_HMM_HWPX
 
-## 기준
-- main: 6dc92346dc92346dc92346dc92346dc92346dc92 (2026-09-14)
+## 기준 (R00 관측 보정)
+- local HEAD: 1880aeeccba68467a7f00a95f7b3e82a1d948fdd (main)
+- origin/main: bde67d2
 - 원격: https://github.com/wayne0525/MABC_HMM_HWPX
+- 원격검증.json: 없음 (관측 기준으로 대체)
+
+## 미푸시 변경 (보존 대상)
+- README.md
+- docs/BUILD_STATE.md
+- vercel/hwpx_core/core.py
+- docs/TEAM_CONTRACT.md (신규)
+- docs/team/ (신규)
 
 ## 현재 상태 (2026-09-14)
 - 이식(transplant) 모드 코드: `vercel/hwpx_core/core.py`에 단일 구현 (root CLI와 Vercel API 모두 이 코어를 import).
@@ -53,9 +62,9 @@
 - `vercel/tests/fixtures/B_content_alt_ns.hwpx` — hh: 접두사 사용 (namespace 변형 테스트)
 
 ## 미구현
-- multipart CRLF 보존 테스트 (05 이슈로 이관)
-- 채우기(fill) 모드: 표 입력란 탐지/값 매핑/Solar 호출 없음
-- 실제 한글 호환 시험 (한컴 오피스에서 열기) — 합성 fixture로 ZIP/XML 유효성만 확인
+- multipart CRLF 보존 테스트 (05 이슈)
+- 채우기(fill) 모드 없음
+- 실제 한글 호환 시험
 
 ## 다음 번호
 05: multipart CRLF 보존 테스트 + 실제 파일 쌍(01_culture_cctv)으로 이식 검증 + Vercel 배포 재도전
