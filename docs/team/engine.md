@@ -34,3 +34,18 @@
   - NameError: `name '_build_extra_paras' is not defined` → assert 실패, exit 1
 - 기록 원칙: 이 RED는 엔진 완료가 아님. 코어 수정 없이 구조 손상으로 남김.
 - 함수 임시 복원/기대값 완화 없음.
+
+## R04 연결 완료 (기록: 2026-09-15)
+
+- 검사: `python test_size_limits.py`
+- import 대상: `vercel.api.handler.handler(request)` (handler(request)만 사용, method/headers/get_data() 계약)
+- 입력 구성: 실제 multipart body(bytes). 초과 케이스는 더미 바이트로 필드 길이 검사만 통과하도록 구성, 정상 케이스는 R02 fixture(A_verified.hwpx, B_verified.hwpx)
+- a/b 필드: 핸들러 필드는 소문자 a/b로 전달. 초과 시 413 응답(message=bytes, Content-Type=text/plain)
+- 실제 검사 결과:
+  - 케이스1(A 5.1MB 초과): status 413 확인
+  - 케이스2(A 4MB + B 2.5MB = 6.5MB 초과): status 413 확인
+  - 케이스3(정상 크기 R02 fixture): handler가 200 대신 500 반환 → assert 실패(exit 1)
+    - 원인: handler 내부 `hwpx_core.run(...)` 호출 시 `NameError: name '_build_extra_paras' is not defined`
+    - handler 계약/요청 구성 오류가 아니라 엔진(코자) 내부 미정의 함수 호출로 인한 구조 손상
+- 기록 원칙: 이 RED는 handler 완성/엔진 완료가 아님. 코어 수정 없이 구조 손상으로 남김.
+- 함수 임시 복원/기대값 완화 없음.
