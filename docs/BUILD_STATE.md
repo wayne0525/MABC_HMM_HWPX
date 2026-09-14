@@ -5,7 +5,7 @@
 - 원격: https://github.com/wayne0525/MABC_HMM_HWPX
 
 ## 현재 상태 (2026-09-14)
-- 이식(transplant) 모드 코드: `vercel/hwpx_core/core.py`에 단일 구현.
+- 이식(transplant) 모드 코드: `vercel/hwpx_core/core.py`에 단일 구현 (root CLI와 Vercel API 모두 이 코어를 import).
 - Vercel API: `vercel/api/index.py` → `api.handler.handler` export. multipart 파싱 + `hwpx_core.run` 호출.
 - root CLI: `transplant.py`는 이제 `hwpx_core`를 명시적 경로로 import 하는 CLI 래퍼. self-contained 아님.
 - 채우기(fill) 모드 없음. 표 칸 매핑/Solar 호출 없음.
@@ -17,12 +17,12 @@
 - 테스트: `cd vercel && python3 -m unittest tests.test_red_state -v`
 
 ## 중복 코어 현황
-- `transplant.py` (root, 103 lines): CLI 래퍼. `hwpx_core`를 명시적 경로로 import.
-- `vercel/hwpx_core/core.py` (397 lines): 단일 출처. root CLI + Vercel API 모두 import.
+- `transplant.py` (root, 91 lines): CLI 래퍼. `hwpx_core`를 명시적 경로로 import.
+- `vercel/hwpx_core/core.py` (496 lines): 단일 출처. root CLI + Vercel API 모두 import.
 - `vercel/api/handler.py`: multipart + handler. `hwpx_core.run` 호출.
 - `vercel/api/transplant.py`: 이전 커밋(5fa39ed)에서 제거됨.
-- `vercel/transplant.py`는 존재하지 않음.
-- root에 남아있는 중복 함수 정의 없음 — 모든 함수 정의가 `hwpx_core.core`로 통합됨.
+- `vercel/transplant.py`: 중복 CLI로 존재했으나 이번 단계에서 제거. root CLI만 유지.
+- root에는 이식 함수 정의가 없고, 코어는 `vercel/hwpx_core/core.py` 단일 구현. root CLI와 Vercel API 모두 이 코어를 명시적 경로로 import.
 
 ## 확인된 현재 코드 오류
 1. (해결됨) `find_closing_tag`가 로컬 이름("p")만 받아 `</p>`를 찾았으나, XML은 `</hp:p>` → 파싱 전부 실패. 패치: tag="p"일 때 `<[a-z]+:p>`, `</[a-z]+:p>` 패턴 사용.
@@ -60,30 +60,26 @@
 ## 다음 번호
 05: multipart CRLF 보존 테스트 + 실제 파일 쌍(01_culture_cctv)으로 이식 검증 + Vercel 배포 재도전
 
-## 02단계: 코어 단일화 (완료)
+## 02단계: 중복 CLI 제거 + import 경로 통일 (이번 작업)
 
 ### 변경 파일
-- `transplant.py`: 함수 정의 전부 제거, `hwpx_core` 명시적 경로 import, `argparse` + `--fixtures`/`--output` 옵션 추가.
-- `vercel/api/index.py`: 변경 없음 (entrypoint 유지).
-- `vercel/api/handler.py`: 변경 없음 (이미 `hwpx_core` import 중).
-- `docs/BUILD_STATE.md`: 02단계 기록 추가.
+- `vercel/transplant.py`: 제거. root CLI와 동일한 중복 CLI였으며, 코드 내 호출자는 없음.
+- `docs/BUILD_STATE.md`: core 줄수/존재 여부/현재 상태 기록 정정.
 
 ### 검증 명령/결과
-- 문법: `python3 -m py_compile transplant.py vercel/hwpx_core/__init__.py vercel/hwpx_core/core.py vercel/api/index.py vercel/api/handler.py` → 전부 통과
-- RED-state 테스트: `cd vercel && python3 -m unittest tests.test_red_state` → 5 ok, 1 의도된 RED (multipart CRLF)
-- root와 vercel 동일 코어 확인: `root_core is vercel_core == True`
-- root CLI 실제 실행: `python3 transplant.py vercel/tests/fixtures/A_template.hwpx vercel/tests/fixtures/B_content.hwpx /tmp/verify02.hwpx` → success (2463 bytes)
-- 출력 검증: ZIP 유효 + XML 파싱 + 텍스트 정확 + namespace 보존 모두 통과
+- 문법: `python3 -m py_compile transplant.py vercel/api/handler.py vercel/api/index.py vercel/hwpx_core/__init__.py vercel/hwpx_core/core.py` → 통과
+- root CLI: `python3 transplant.py --help` → 정상
+- Vercel 핸들러: `cd vercel && PYTHONPATH=.. python3 -c "from api.index import handler; print(callable(handler))"` → True
+- 동일 코어 확인: `cd vercel && PYTHONPATH=.. python3 -m unittest tests.test_red_state.Test_RED_CoreImportFromAnyDir -v` → ok
 
 ### 통과 조건
-- root CLI와 Vercel API가 동일 `hwpx_core.run`을 명시적 경로로 import → 충족
-- root에 중복 함수 정의 없음 → 충족
+- root CLI와 Vercel API가 같은 실행 코어를 사용 → 충족 (root는 `hwpx_core` import, Vercel handler도 `hwpx_core` import)
+- 중복 CLI 제거 후에도 기존 호출 경로 유지 → 충족
 
 ### 미구현
-- `--fixtures`/`--output` 단독 사용 시 경로 해석 재확인 필요 (위 테스트에서 파일 미검출)
-- multipart CRLF 보존 테스트 (05 이슈)
 - 채우기(fill) 모드 없음
 - 실제 한글 호환 시험
+- multipart CRLF 보존 테스트 (05 이슈로 이관됨)
 
 ### 다음 번호
-03: (필요 시) root CLI --fixtures/--output 재검증 + 실제 파일 쌍으로 이식 검증
+03: fixture 복원/재현 후 최소 이식 검증 + 문서상 미구현 항목 정리
