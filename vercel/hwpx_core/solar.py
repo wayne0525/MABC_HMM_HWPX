@@ -87,6 +87,34 @@ def treat_user_text_as_data(text: str) -> str:
     return text
 
 
+def build_request(field_input: dict, original_text: str) -> dict:
+    """입력란(fieldId/context/unit/evidenceQuote)과 원문을 요청 데이터로 조립한다.
+
+    시스템 지시와 문서 데이터는 분리하며, 원문 속 명령형 문장은 데이터로 취급한다.
+    """
+    validated = validate_field_input(field_input)
+    return {
+        "inputs": validated,
+        "originalText": treat_user_text_as_data(original_text),
+    }
+
+
+def process_fixed_suggestions(raw: dict) -> list[Suggestion]:
+    """고정 응답(mock)에서 suggestions만 추출·검증한다.
+
+    raw는 서버/모의 응답 dict여야 하며, suggestions는 계약 키만 통과한다.
+    """
+    if not isinstance(raw, dict):
+        raise ValueError("고정 응답은 dict여야 한다")
+    suggestions_raw = raw.get("suggestions")
+    if not isinstance(suggestions_raw, list):
+        raise ValueError("suggestions는 리스트여야 한다")
+    out: list[Suggestion] = []
+    for item in suggestions_raw:
+        out.append(validate_suggestion(item))
+    return out
+
+
 def has_key() -> bool:
     """UPSTAGE_API_KEY가 설정되어 있으면 True."""
     return bool(os.environ.get("UPSTAGE_API_KEY"))
