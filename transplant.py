@@ -38,13 +38,28 @@ sha256_path = hwpx_core.sha256_path
 
 
 def main() -> None:
-    if len(sys.argv) != 4:
-        print(f"usage: {sys.argv[0]} A_style.hwpx B_content.hwpx out.hwpx", file=sys.stderr)
-        sys.exit(2)
+    import argparse
+    ap = argparse.ArgumentParser(description="HWPX 서식 이식 (style transplant)")
+    ap.add_argument("a", type=Path, help="서식 원본 HWPX (A)")
+    ap.add_argument("b", type=Path, help="내용 원본 HWPX (B)")
+    ap.add_argument("out", type=Path, help="출력 HWPX (C)")
+    ap.add_argument("--fixtures", type=Path, default=None,
+                    help="합성 fixture 루트 디렉토리. 지정 시 a,b,out을 이 경로 기준 상대경로로 해석.")
+    ap.add_argument("--output", type=Path, default=None,
+                    help="출력 파일 디렉토리(보존용 플래그). 지정 시 out을 이 경로 아래로 작성.")
+    args = ap.parse_args()
 
-    a = Path(sys.argv[1])
-    b = Path(sys.argv[2])
-    out = Path(sys.argv[3])
+    a = args.a
+    b = args.b
+    out = args.out
+
+    if args.fixtures:
+        a = args.fixtures / a
+        b = args.fixtures / b
+        out = (args.output / out.name) if args.output else (args.fixtures / out)
+
+    if args.output and not args.fixtures:
+        out = args.output / out.name
 
     if not a.exists():
         print(f"ERR: A 없음: {a}", file=sys.stderr)

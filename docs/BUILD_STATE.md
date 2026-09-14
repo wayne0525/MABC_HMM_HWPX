@@ -59,3 +59,31 @@
 
 ## 다음 번호
 05: multipart CRLF 보존 테스트 + 실제 파일 쌍(01_culture_cctv)으로 이식 검증 + Vercel 배포 재도전
+
+## 02단계: 코어 단일화 (완료)
+
+### 변경 파일
+- `transplant.py`: 함수 정의 전부 제거, `hwpx_core` 명시적 경로 import, `argparse` + `--fixtures`/`--output` 옵션 추가.
+- `vercel/api/index.py`: 변경 없음 (entrypoint 유지).
+- `vercel/api/handler.py`: 변경 없음 (이미 `hwpx_core` import 중).
+- `docs/BUILD_STATE.md`: 02단계 기록 추가.
+
+### 검증 명령/결과
+- 문법: `python3 -m py_compile transplant.py vercel/hwpx_core/__init__.py vercel/hwpx_core/core.py vercel/api/index.py vercel/api/handler.py` → 전부 통과
+- RED-state 테스트: `cd vercel && python3 -m unittest tests.test_red_state` → 5 ok, 1 의도된 RED (multipart CRLF)
+- root와 vercel 동일 코어 확인: `root_core is vercel_core == True`
+- root CLI 실제 실행: `python3 transplant.py vercel/tests/fixtures/A_template.hwpx vercel/tests/fixtures/B_content.hwpx /tmp/verify02.hwpx` → success (2463 bytes)
+- 출력 검증: ZIP 유효 + XML 파싱 + 텍스트 정확 + namespace 보존 모두 통과
+
+### 통과 조건
+- root CLI와 Vercel API가 동일 `hwpx_core.run`을 명시적 경로로 import → 충족
+- root에 중복 함수 정의 없음 → 충족
+
+### 미구현
+- `--fixtures`/`--output` 단독 사용 시 경로 해석 재확인 필요 (위 테스트에서 파일 미검출)
+- multipart CRLF 보존 테스트 (05 이슈)
+- 채우기(fill) 모드 없음
+- 실제 한글 호환 시험
+
+### 다음 번호
+03: (필요 시) root CLI --fixtures/--output 재검증 + 실제 파일 쌍으로 이식 검증
