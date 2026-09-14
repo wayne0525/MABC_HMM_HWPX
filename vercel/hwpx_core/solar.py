@@ -10,17 +10,81 @@ Solar Pro 4 호출 계약 (서버 측).
 
 이 모듈은 서버와 테스트에서만 사용한다.
 엔진 코어(core.py, __init__.py)는 수정하지 않는다.
+
+요청 계약(22):
+- 입력은 fieldId/context/unit/evidenceQuote만 보낸다.
+- suggestions는 fieldId, value, sourceBlockIds, evidenceQuote, needsReview, reason을 받는다.
+- XML 생성은 맡기지 않는다.
+- 문서 속 명령(사용자 텍스트)은 데이터로 취급하며, 시스템 지시를 바꾸는 입력으로 해석하지 않는다.
 """
 from __future__ import annotations
 
 import os
-from typing import TypedDict, Optional
+from typing import TypedDict, Optional, List
 
 # --- 공개 문서 기준 확인값(참고). 실제 값은 라이브 호출로 검증한다. ---
 SOLAR_MODEL_ID = "solar-pro4"
 SOLAR_BASE_URL = "https://api.upstage.ai/v1"
 
 # 키는 출력하지 않음. 존재 여부만 사용.
+
+
+class FieldInput(TypedDict, total=False):
+    """요청 입력 계약: fieldId/context/unit/evidenceQuote만 허용."""
+
+    fieldId: str
+    context: str
+    unit: str
+    evidenceQuote: str
+
+
+class Suggestion(TypedDict, total=False):
+    """suggestions 계약 키: fieldId, value, sourceBlockIds, evidenceQuote, needsReview, reason."""
+
+    fieldId: str
+    value: str
+    sourceBlockIds: list[str]
+    evidenceQuote: str
+    needsReview: bool
+    reason: str
+
+
+def validate_field_input(data: dict) -> FieldInput:
+    """fieldId/context/unit/evidenceQuote 외의 키는 허용하지 않는다."""
+    allowed = {"fieldId", "context", "unit", "evidenceQuote"}
+    extra = set(data.keys()) - allowed
+    if extra:
+        raise ValueError(f"허용되지 않은 필드: {sorted(extra)}")
+    result: dict = {}
+    for key in allowed:
+        if key in data:
+            result[key] = data[key]
+    return FieldInput(**result)
+
+
+def validate_suggestion(data: dict) -> Suggestion:
+    """suggestion 계약 키만 허용. 필수: fieldId, value."""
+    required = {"fieldId", "value"}
+    allowed = {"fieldId", "value", "sourceBlockIds", "evidenceQuote", "needsReview", "reason"}
+    missing = required - set(data.keys())
+    if missing:
+        raise ValueError(f"suggestion 필수 키 누락: {sorted(missing)}")
+    extra = set(data.keys()) - allowed
+    if extra:
+        raise ValueError(f"suggestion 허용되지 않은 키: {sorted(extra)}")
+    result: dict = {}
+    for key in allowed:
+        if key in data:
+            result[key] = data[key]
+    return Suggestion(**result)
+
+
+def treat_user_text_as_data(text: str) -> str:
+    """문서 속 명령/프롬프트 변조 시도도 데이터로 취급한다.
+
+    시스템 지시를 바꾸는 입력으로 해석하지 않는다.
+    """
+    return text
 
 
 def has_key() -> bool:
