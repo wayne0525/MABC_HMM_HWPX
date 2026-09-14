@@ -16,7 +16,11 @@ from pathlib import Path
 
 # repo 내 fixture만 사용 — 개인 Downloads 경로 없음
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
-sys.path.insert(0, str(FIXTURES.parent))  # vercel/
+# import 경로: 파일 위치(test_red_state.py) 기준, 실제 vercel 폴더를 sys.path에 연결
+# tests/test_red_state.py에서 tests/의 상위가 vercel/이므로 vercel/을 넣는다
+_sys_path_root = FIXTURES.parent.parent if FIXTURES.parent.name == "tests" else FIXTURES.parent
+if str(_sys_path_root) not in sys.path:
+    sys.path.insert(0, str(_sys_path_root))
 
 import hwpx_core  # noqa: E402
 
