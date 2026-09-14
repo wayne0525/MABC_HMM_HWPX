@@ -1,15 +1,18 @@
 # BUILD_STATE.md — MABC_HMM_HWPX
 
-## 기준 (R00 관측 보정)
-- local HEAD: 1880aeeccba68467a7f00a95f7b3e82a1d948fdd (main)
-- origin/main: bde67d2
+## 기준 (R02 관측)
+- local HEAD: b30382a862245ca656454fbd847efba29254423b (R01 완료)
+- origin/main: 3258a07519ab92db6308394437ba568a6be84001
 - 원격: https://github.com/wayne0525/MABC_HMM_HWPX
 - 원격검증.json: 없음 (관측 기준으로 대체)
 
-## 미푸시 변경 (보존 대상)
-- README.md
+## 미푸시 변경 (R02 준비 대상)
+- vercel/tests/fixtures/A_verified.hwpx (train-pair 실제 A)
+- vercel/tests/fixtures/B_verified.hwpx (train-pair 실제 B)
+- vercel/tests/fixtures/test_fixtures_only.hwpx (실문서 구조로 재작성)
+- vercel/tests/test_fixture_validity.py (신규)
 - docs/BUILD_STATE.md
-- vercel/hwpx_core/core.py
+
 - docs/TEAM_CONTRACT.md (신규)
 - docs/team/ (신규)
 
