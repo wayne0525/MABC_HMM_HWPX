@@ -1,13 +1,13 @@
 # BUILD_STATE.md — MABC_HMM_HWPX
 
-## 기준 (R03 관측)
-- local HEAD: 8c0eebe66c6188149835287feba83731a6b56cff (R02 완료)
-- origin/main: 8c0eebe66c6188149835287feba83731a6b56cff
+## 기준 (R03 푸시 완료 관측)
+- local HEAD: 7157b5504a43ebf1426ef0757b63571bc8fca2c9 (R03 완료, origin/main과 동일)
+- origin/main: 7157b5504a43ebf1426ef0757b63571bc8fca2c9
 - 원격: https://github.com/wayne0525/MABC_HMM_HWPX
 - 원격검증.json: 없음 (관측 기준으로 대체)
 
-## 미푸시 변경 (R03 대상)
-- test_v4.py (Downloads 경로 → R02 fixture, CLI wrapper import → hwpx_core 실제 함수, print → assert)
+## 미푸시 변경 (없음)
+- R03 준비 변경은 team/engine 브랜치로 이관 후 별도 기록
 
 ## 현재 상태 (2026-09-14)
 - 이식(transplant) 모드 코드: `vercel/hwpx_core/core.py`에 단일 구현 (root CLI와 Vercel API 모두 이 코어를 import).

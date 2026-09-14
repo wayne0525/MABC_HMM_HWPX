@@ -22,3 +22,15 @@
 - 코어 통합이 이미 되어 있으면 재작업하지 않음
 - 검사가 실제 실패까지 도달하면 RED로 기록하되, 엔진 완료로 표시하지 않음
 - fixtures는 필요 시 그때그때 준비
+
+## R03 연결 완료 (기록: 2026-09-15)
+
+- 검사: `python test_v4.py` (test_v4.py)
+- import: CLI wrapper가 아닌 `vercel.hwpx_core.core`의 실제 함수(transplant_body_v4 등)
+- 입력/경로: R02 fixture (`vercel/tests/fixtures/A_verified.hwpx`, `B_verified.hwpx`)
+- 출력 형태: print 기반 → assert 기반
+- 실제 검사 결과: **엔진 실행까지 도달 + RED**
+  - 이식 함수 호출 시점까지는 도달
+  - NameError: `name '_build_extra_paras' is not defined` → assert 실패, exit 1
+- 기록 원칙: 이 RED는 엔진 완료가 아님. 코어 수정 없이 구조 손상으로 남김.
+- 함수 임시 복원/기대값 완화 없음.
